@@ -1688,4 +1688,109 @@ if has_ebltable:
                 #otherwise it's in keV
                 eTeV = x / 1e9
                 return np.exp(-self._tau.opt_depth( redshift, eTeV ))
- 
+
+
+
+class Thermal_bremsstrahlung_optical_thin(Function1D):
+
+    r"""
+    description :
+
+        Thermal bremsstrahlung optical thin
+
+
+
+    latex : $f(x) = K \exp(-\frac{(x-Epiv)}{kT})\frac{Epiv}{x}$
+
+
+
+    parameters :
+
+        K :
+
+            desc :
+
+            initial value : 1e-4
+
+            min : 0.
+
+            is_normalization : True
+
+
+
+        Epiv :
+
+            desc :
+
+            initial value : 10
+
+            min : 0
+
+
+
+        kT :
+
+            desc : temperature of the blackbody
+
+            initial value : 30.0
+
+            min: 0.
+
+    """
+
+
+    __metaclass__ = FunctionMeta
+
+
+
+    def _set_units(self, x_unit, y_unit):
+
+
+
+        # norm has same unit as energy
+
+        self.K.unit = y_unit
+
+
+
+        self.Epiv.unit = x_unit
+
+
+
+        self.kT.unit = x_unit
+
+
+    def evaluate(self, x, K, Epiv, kT):
+
+
+
+        arg = np.divide(-(x-Epiv),kT)
+
+
+
+        # get rid of overflow
+
+        idx = arg <= 700.
+
+
+
+        # The K * 0 part is a trick so that out will have the right units (if the input
+
+        # has units)
+
+
+
+        out = np.zeros(x.shape) * K * 0
+
+
+
+        out[idx] = K*np.exp(arg[idx])*(Epiv/x[idx])
+
+        #out[~idx] = 0. * K
+
+        #out[idx] = calc(x,K,Epiv,arg)
+
+        return out
+
+
+            
